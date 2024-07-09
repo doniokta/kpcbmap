@@ -31,14 +31,11 @@ let activeUsersCount = 0; // Active users count
 function initializeMap() {
   map = L.map('map').setView([0, 0], 16);
 
-// Hapus layer peta OpenStreetMap yang sudah ada
-map.removeLayer(lightLayer);
-  
-  // Tambahkan layer peta Google Maps satelit
-var googleSatelliteLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-    maxZoom: 20,
-    subdomains:['mt0','mt1','mt2','mt3']
-}).addTo(map);
+  // Tile layers
+  var lightLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 25,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map);
 
   var darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 25,
