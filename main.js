@@ -1,25 +1,3 @@
-// Import Firebase modules
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
-import { getStorage, ref as storageRef, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-storage.js";
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyAqDzfu54Zios3ahqp-hHQUDRHsB42SJeU",
-  authDomain: "kpcbmap-c9cbc.firebaseapp.com",
-  databaseURL: "https://kpcbmap-c9cbc-default-rtdb.firebaseio.com",
-  projectId: "kpcbmap-c9cbc",
-  storageBucket: "kpcbmap-c9cbc.appspot.com",
-  messagingSenderId: "257407785210",
-  appId: "1:257407785210:web:5e893944bdde6ad62a1143",
-  measurementId: "G-X8DF9W9W13"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
-const storage = getStorage(app);
-
 // Leaflet map setup
 let map;
 let userMarker;
@@ -70,6 +48,7 @@ function initializeMap() {
   document.body.appendChild(createButton('live-tracking-button', '<i class="fas fa-play"></i> Start Live Tracking', toggleLiveTracking));
   document.body.appendChild(createButton('mode-toggle-button', '<i class="fas fa-moon"></i>', toggleMapMode));
   document.body.appendChild(createButton('satellite-toggle-button', '<i class="fas fa-globe"></i>', toggleSatelliteMode));
+  document.body.appendChild(createButton('map-toggle-button', '<i class="fas fa-map"></i> Switch Map', toggleMap));
 
   var coordinatesDisplay = createDisplay('coordinates', 'Lat: 0, Lng: 0');
   var speedDisplay = createDisplay('speed', 'Speed: 0 km/h');
@@ -200,7 +179,20 @@ function toggleSatelliteMode() {
   }
 }
 
-// Function to fetch GeoJSON data and add to map
+// Function to toggle between default and satellite map
+function toggleMap() {
+  if (map.hasLayer(lightLayer)) {
+    map.removeLayer(lightLayer);
+    map.addLayer(googleSatelliteLayer);
+    document.querySelector('.map-toggle-button').innerHTML = '<i class="fas fa-globe"></i> Switch Map';
+  } else {
+    map.removeLayer(googleSatelliteLayer);
+    map.addLayer(lightLayer);
+    document.querySelector('.map-toggle-button').innerHTML = '<i class="fas fa-map"></i> Switch Map';
+  }
+}
+
+// Function to fetch GeoJSON data from storage
 function fetchGeoJsonData() {
   const geoJsonRef = storageRef(storage, 'map.geojson');
   getDownloadURL(geoJsonRef)
