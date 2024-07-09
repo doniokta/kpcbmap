@@ -1,4 +1,3 @@
-// Import Firebase modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
 import { getStorage, ref as storageRef, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-storage.js";
@@ -14,7 +13,6 @@ const firebaseConfig = {
   appId: "1:257407785210:web:5e893944bdde6ad62a1143",
   measurementId: "G-X8DF9W9W13"
 };
-
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
@@ -31,7 +29,6 @@ let userId = null; // To be initialized with user input
 let activeUsersCount = 0; // Active users count
 
 function initializeMap() {
-  // Initialize Leaflet map
   map = L.map('map').setView([0, 0], 16);
 
   // Tile layers
@@ -43,12 +40,6 @@ function initializeMap() {
   var darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 25,
     attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a>'
-  });
-
-  // Google Maps satellite layer
-  var googleSatelliteLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-    maxZoom: 20,
-    subdomains:['mt0','mt1','mt2','mt3']
   });
 
   // Custom red circle marker
@@ -69,7 +60,6 @@ function initializeMap() {
   document.body.appendChild(createButton('lock-button', '<i class="fas fa-lock"></i>', toggleLockMap));
   document.body.appendChild(createButton('live-tracking-button', '<i class="fas fa-play"></i> Start Live Tracking', toggleLiveTracking));
   document.body.appendChild(createButton('mode-toggle-button', '<i class="fas fa-moon"></i>', toggleMapMode));
-  document.body.appendChild(createButton('satellite-toggle-button', '<i class="fas fa-globe"></i>', toggleSatelliteMode));
 
   var coordinatesDisplay = createDisplay('coordinates', 'Lat: 0, Lng: 0');
   var speedDisplay = createDisplay('speed', 'Speed: 0 km/h');
@@ -84,7 +74,6 @@ function initializeMap() {
   fetchGeoJsonData();
 }
 
-// Function to create a button element
 function createButton(className, innerHTML, onClick) {
   var button = document.createElement('button');
   button.className = className;
@@ -93,7 +82,6 @@ function createButton(className, innerHTML, onClick) {
   return button;
 }
 
-// Function to create a display element
 function createDisplay(className, initialText) {
   var display = document.createElement('div');
   display.className = className;
@@ -101,13 +89,11 @@ function createDisplay(className, initialText) {
   return display;
 }
 
-// Function to toggle map locking
 function toggleLockMap() {
   isMapLocked = !isMapLocked;
   document.querySelector('.lock-button').innerHTML = isMapLocked ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-unlock"></i>';
 }
 
-// Function to toggle live tracking
 function toggleLiveTracking() {
   if (!isLiveTracking) {
     watchId = navigator.geolocation.watchPosition(updateUserPosition, onLocationError, {
@@ -129,7 +115,6 @@ function toggleLiveTracking() {
   }
 }
 
-// Function to update user position
 function updateUserPosition(position) {
   var lat = position.coords.latitude;
   var lng = position.coords.longitude;
@@ -164,13 +149,31 @@ function updateUserPosition(position) {
   }
 }
 
-// Function to handle location error
+ // Function to load GeoJSON data onto the map
+    function fetchAndAddGeoJSONLayer(url) {
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                L.geoJSON(data).addTo(map);
+            })
+            .catch(error => {
+                console.error('Error loading GeoJSON file:', error);
+            });
+    }
+
+    // Load GeoJSON data from map.geojson onto the map
+    fetchAndAddGeoJSONLayer('map.geojson');
+
 function onLocationError(error) {
   console.error('Error getting location: ' + error.message);
   alert('Error getting location: ' + error.message);
 }
 
-// Function to toggle map mode (light/dark)
 function toggleMapMode() {
   if (map.hasLayer(lightLayer)) {
     map.removeLayer(lightLayer);
@@ -183,24 +186,6 @@ function toggleMapMode() {
   }
 }
 
-// Function to toggle satellite mode
-function toggleSatelliteMode() {
-  if (map.hasLayer(lightLayer) || map.hasLayer(darkLayer)) {
-    map.eachLayer(function (layer) {
-      if (layer !== googleSatelliteLayer) {
-        map.removeLayer(layer);
-      }
-    });
-    map.addLayer(googleSatelliteLayer);
-    document.querySelector('.satellite-toggle-button').innerHTML = '<i class="fas fa-map"></i>';
-  } else {
-    map.removeLayer(googleSatelliteLayer);
-    map.addLayer(lightLayer); // Kembali ke layer default jika tidak ada yang dipilih
-    document.querySelector('.satellite-toggle-button').innerHTML = '<i class="fas fa-globe"></i>';
-  }
-}
-
-// Function to fetch GeoJSON data and add to map
 function fetchGeoJsonData() {
   const geoJsonRef = storageRef(storage, 'map.geojson');
   getDownloadURL(geoJsonRef)
@@ -219,7 +204,6 @@ function fetchGeoJsonData() {
     });
 }
 
-// Function to fetch all user locations from Firebase
 function fetchAllUserLocations() {
   const locationsRef = ref(database, 'locations/');
   onValue(locationsRef, (snapshot) => {
@@ -245,5 +229,6 @@ function fetchAllUserLocations() {
   });
 }
 
-// Initialize map when DOM content is loaded
-document.addEventListener('DOMContentLoaded', initializeMap);
+document.addEventListener('DOMContentLoaded', () => {
+  initializeMap();
+});
