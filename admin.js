@@ -18,10 +18,10 @@ const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
 // Admin password
-const ADMIN_PASSWORD = "@Greedisgood023";
+const ADMIN_PASSWORD = "admin1234";
 
 // Handle login form submission
-document.getElementById('login-form').addEventListener('submit', function(event) {
+document.getElementById('login-form').addEventListener('submit', function (event) {
   event.preventDefault();
   const passwordInput = document.getElementById('password').value;
 
