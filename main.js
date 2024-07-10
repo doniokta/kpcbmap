@@ -150,27 +150,55 @@ function updateUserPosition(position) {
   }
 }
 
-function fetchAndAddGeoJSONLayer(url) {
-  fetch(url)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
-    .then(data => {
-      L.geoJSON(data).addTo(map);
-    })
-    .catch(error => {
-      console.error('Error loading GeoJSON file:', error);
-    });
+ // Function to load GeoJSON data onto the map
+    function fetchAndAddGeoJSONLayer(url) {
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                L.geoJSON(data).addTo(map);
+            })
+            .catch(error => {
+                console.error('Error loading GeoJSON file:', error);
+            });
+    }
+
+    // Load GeoJSON data from map.geojson onto the map
+    fetchAndAddGeoJSONLayer('map.geojson');
+
+function onLocationError(error) {
+  console.error('Error getting location: ' + error.message);
+  alert('Error getting location: ' + error.message);
+}
+
+function toggleMapMode() {
+  if (map.hasLayer(lightLayer)) {
+    map.removeLayer(lightLayer);
+    map.addLayer(darkLayer);
+    document.querySelector('.mode-toggle-button').innerHTML = '<i class="fas fa-sun"></i>';
+  } else {
+    map.removeLayer(darkLayer);
+    map.addLayer(lightLayer);
+    document.querySelector('.mode-toggle-button').innerHTML = '<i class="fas fa-moon"></i>';
+  }
 }
 
 function fetchGeoJsonData() {
   const geoJsonRef = storageRef(storage, 'map.geojson');
   getDownloadURL(geoJsonRef)
     .then((url) => {
-      fetchAndAddGeoJSONLayer(url);
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          L.geoJSON(data).addTo(map);
+        })
+        .catch(error => {
+          console.error('Error fetching GeoJSON data:', error);
+        });
     })
     .catch((error) => {
       console.error('Error getting GeoJSON download URL:', error);
