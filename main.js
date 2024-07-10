@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
+import { getDatabase, ref, set, onValue, child, query, equalTo } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
 import { getStorage, ref as storageRef, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-storage.js";
 
 // Your web app's Firebase configuration
@@ -13,6 +13,7 @@ const firebaseConfig = {
   appId: "1:257407785210:web:5e893944bdde6ad62a1143",
   measurementId: "G-X8DF9W9W13"
 };
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
@@ -50,28 +51,45 @@ function initializeMap() {
     iconAnchor: [6, 6]
   });
 
-  // Initialize user input for name
-  userId = prompt("Please enter your name:").toUpperCase(); // Get user input and convert to uppercase
+  // Check if userId is stored in localStorage
+  const storedUserId = localStorage.getItem('userId');
+  if (storedUserId) {
+    userId = storedUserId;
+    console.log(`User ID '${userId}' loaded from localStorage`);
+    // Directly initialize map
+    initializeUserMap();
+  } else {
+    // Prompt user to enter user ID
+    userId = prompt("Please enter your user ID (max 15 characters):").toUpperCase();
+    if (userId) {
+      checkDeviceRegistered(userId);
+    } else {
+      alert("User ID is required.");
+    }
+  }
 
-  // User marker initialization
-  userMarker = L.marker([0, 0], { icon: redCircleIcon }).addTo(map);
+  // Initialize map for the user
+  function initializeUserMap() {
+    // User marker initialization
+    userMarker = L.marker([0, 0], { icon: redCircleIcon }).addTo(map);
 
-  // UI elements
-  document.body.appendChild(createButton('lock-button', '<i class="fas fa-lock"></i>', toggleLockMap));
-  document.body.appendChild(createButton('live-tracking-button', '<i class="fas fa-play"></i> Start Live Tracking', toggleLiveTracking));
-  document.body.appendChild(createButton('mode-toggle-button', '<i class="fas fa-moon"></i>', toggleMapMode));
+    // UI elements
+    document.body.appendChild(createButton('lock-button', '<i class="fas fa-lock"></i>', toggleLockMap));
+    document.body.appendChild(createButton('live-tracking-button', '<i class="fas fa-play"></i> Start Live Tracking', toggleLiveTracking));
+    document.body.appendChild(createButton('mode-toggle-button', '<i class="fas fa-moon"></i>', toggleMapMode));
 
-  var coordinatesDisplay = createDisplay('coordinates', 'Lat: 0, Lng: 0');
-  var speedDisplay = createDisplay('speed', 'Speed: 0 km/h');
-  var activeUsersDisplay = createDisplay('active-users', 'Active Users: 0');
+    var coordinatesDisplay = createDisplay('coordinates', 'Lat: 0, Lng: 0');
+    var speedDisplay = createDisplay('speed', 'Speed: 0 km/h');
+    var activeUsersDisplay = createDisplay('active-users', 'Active Users: 0');
 
-  document.body.appendChild(coordinatesDisplay);
-  document.body.appendChild(speedDisplay);
-  document.body.appendChild(activeUsersDisplay);
+    document.body.appendChild(coordinatesDisplay);
+    document.body.appendChild(speedDisplay);
+    document.body.appendChild(activeUsersDisplay);
 
-  // Initialize map and fetch initial user locations
-  fetchAllUserLocations();
-  fetchGeoJsonData();
+    // Initialize map and fetch initial user locations
+    fetchAllUserLocations();
+    fetchGeoJsonData();
+  }
 }
 
 function createButton(className, innerHTML, onClick) {
@@ -150,55 +168,27 @@ function updateUserPosition(position) {
   }
 }
 
- // Function to load GeoJSON data onto the map
-    function fetchAndAddGeoJSONLayer(url) {
-        fetch(url)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                L.geoJSON(data).addTo(map);
-            })
-            .catch(error => {
-                console.error('Error loading GeoJSON file:', error);
-            });
-    }
-
-    // Load GeoJSON data from map.geojson onto the map
-    fetchAndAddGeoJSONLayer('map.geojson');
-
-function onLocationError(error) {
-  console.error('Error getting location: ' + error.message);
-  alert('Error getting location: ' + error.message);
-}
-
-function toggleMapMode() {
-  if (map.hasLayer(lightLayer)) {
-    map.removeLayer(lightLayer);
-    map.addLayer(darkLayer);
-    document.querySelector('.mode-toggle-button').innerHTML = '<i class="fas fa-sun"></i>';
-  } else {
-    map.removeLayer(darkLayer);
-    map.addLayer(lightLayer);
-    document.querySelector('.mode-toggle-button').innerHTML = '<i class="fas fa-moon"></i>';
-  }
+function fetchAndAddGeoJSONLayer(url) {
+  fetch(url)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      L.geoJSON(data).addTo(map);
+    })
+    .catch(error => {
+      console.error('Error loading GeoJSON file:', error);
+    });
 }
 
 function fetchGeoJsonData() {
   const geoJsonRef = storageRef(storage, 'map.geojson');
   getDownloadURL(geoJsonRef)
     .then((url) => {
-      fetch(url)
-        .then(response => response.json())
-        .then(data => {
-          L.geoJSON(data).addTo(map);
-        })
-        .catch(error => {
-          console.error('Error fetching GeoJSON data:', error);
-        });
+      fetchAndAddGeoJSONLayer(url);
     })
     .catch((error) => {
       console.error('Error getting GeoJSON download URL:', error);
@@ -228,6 +218,55 @@ function fetchAllUserLocations() {
   }, (error) => {
     console.error('Error fetching locations:', error);
   });
+}
+
+function checkDeviceRegistered(userId) {
+  const devicesRef = ref(database, 'devices');
+  const deviceQuery = query(devicesRef, equalTo('userId', userId));
+
+  onValue(deviceQuery, (snapshot) => {
+    if (snapshot.exists()) {
+      console.log(`Device with userId '${userId}' already registered.`);
+      initializeUserMap();
+    } else {
+      console.log(`Device with userId '${userId}' not registered.`);
+      registerDevice(userId);
+    }
+  }, (error) => {
+    console.error('Error checking device registration:', error);
+    alert('Error checking device registration');
+  });
+}
+
+function registerDevice(userId) {
+  const newDeviceRef = ref(database, 'devices').push();
+  set(newDeviceRef, { userId: userId })
+    .then(() => {
+      console.log(`Device with userId '${userId}' registered successfully.`);
+      localStorage.setItem('userId', userId); // Save userId to localStorage
+      initializeUserMap();
+    })
+    .catch((error) => {
+      console.error('Error registering device:', error);
+      alert('Error registering device');
+    });
+}
+
+function onLocationError(error) {
+  console.error('Error getting location: ' + error.message);
+  alert('Error getting location: ' + error.message);
+}
+
+function toggleMapMode() {
+  if (map.hasLayer(lightLayer)) {
+    map.removeLayer(lightLayer);
+    map.addLayer(darkLayer);
+    document.querySelector('.mode-toggle-button').innerHTML = '<i class="fas fa-sun"></i>';
+  } else {
+    map.removeLayer(darkLayer);
+    map.addLayer(lightLayer);
+    document.querySelector('.mode-toggle-button').innerHTML = '<i class="fas fa-moon"></i>';
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
