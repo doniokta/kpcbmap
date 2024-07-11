@@ -27,77 +27,14 @@ document.getElementById('login-form').addEventListener('submit', function (event
 
   if (passwordInput === ADMIN_PASSWORD) {
     document.getElementById('login-container').style.display = 'none';
-    document.getElementById('admin-content').style.display = 'flex';
+    document.getElementById('admin-content').style.display = 'block';
     initializeAdminContent();
   } else {
     alert('Incorrect password. Please try again.');
   }
 });
 
-// Handle navigation links
-document.getElementById('dashboard-link').addEventListener('click', function () {
-  document.getElementById('dashboard-content').style.display = 'block';
-  document.getElementById('map-content').style.display = 'none';
-});
-
-document.getElementById('map-link').addEventListener('click', function () {
-  document.getElementById('dashboard-content').style.display = 'none';
-  document.getElementById('map-content').style.display = 'block';
-});
-
 function initializeAdminContent() {
-  // Initialize the chart
-  const ctx = document.getElementById('user-chart').getContext('2d');
-  const userChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: [],
-      datasets: [{
-        label: 'Number of Users',
-        data: [],
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 1
-      }]
-    },
-    options: {
-      scales: {
-        y: {
-          beginAtZero: true
-        }
-      }
-    }
-  });
-
-  // Fetch user data from Firebase and update the chart
-  const usersRef = ref(database, 'locations/');
-  onValue(usersRef, (snapshot) => {
-    const userIds = [];
-    const userLocations = [];
-
-    snapshot.forEach((childSnapshot) => {
-      const userId = childSnapshot.key;
-      const childData = childSnapshot.val();
-      userIds.push(userId);
-      userLocations.push(`${childData.latitude}, ${childData.longitude}`);
-    });
-
-    userChart.data.labels = userIds;
-    userChart.data.datasets[0].data = userLocations.map(() => 1); // Each user contributes '1' to the count
-    userChart.update();
-
-    // Update the user list
-    const userList = document.getElementById('user-list');
-    userList.innerHTML = '';
-    userIds.forEach((userId, index) => {
-      const listItem = document.createElement('li');
-      listItem.textContent = `${userId}: ${userLocations[index]}`;
-      userList.appendChild(listItem);
-    });
-  }, (error) => {
-    console.error('Error fetching users:', error);
-  });
-
   // Leaflet map setup for admin
   let map = L.map('map').setView([0, 0], 2);
 
