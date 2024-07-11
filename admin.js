@@ -27,11 +27,22 @@ document.getElementById('login-form').addEventListener('submit', function (event
 
   if (passwordInput === ADMIN_PASSWORD) {
     document.getElementById('login-container').style.display = 'none';
-    document.getElementById('admin-content').style.display = 'block';
+    document.getElementById('admin-content').style.display = 'flex';
     initializeAdminContent();
   } else {
     alert('Incorrect password. Please try again.');
   }
+});
+
+// Handle navigation links
+document.getElementById('dashboard-link').addEventListener('click', function () {
+  document.getElementById('dashboard-content').style.display = 'block';
+  document.getElementById('map-content').style.display = 'none';
+});
+
+document.getElementById('map-link').addEventListener('click', function () {
+  document.getElementById('dashboard-content').style.display = 'none';
+  document.getElementById('map-content').style.display = 'block';
 });
 
 function initializeAdminContent() {
