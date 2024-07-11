@@ -1,10 +1,7 @@
 /* Style for the map container */
 #map {
-    height: 100vh;
+    height: 100%;
     width: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
 }
 
 /* Style for the lock button */
@@ -99,9 +96,12 @@
 /* Style for the admin content */
 #admin-content {
     display: flex;
+    height: 100vh;
+}
+
+#admin-content .flex-1 {
+    display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 20px;
 }
 
 /* Style for the user list container */
