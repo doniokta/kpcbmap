@@ -9,18 +9,32 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script type="module" src="admin.js"></script>
-    <link rel="stylesheet" href="style.css">
 </head>
 
 <body class="bg-gray-100">
-    <div id="admin-content" class="h-screen flex">
+    <div id="login-container" class="min-h-screen flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-md max-w-sm w-full">
+            <h2 class="text-2xl font-semibold mb-6 text-center">Admin Login</h2>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="password"
+                        class="mt-1 p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <button type="submit"
+                        class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">Login</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="admin-content" class="hidden h-screen flex">
         <!-- Sidebar -->
-        <div class="w-64 bg-gray-800 text-white p-4 flex-shrink-0">
+        <div class="w-64 bg-gray-800 text-white p-4">
             <h2 class="text-2xl font-semibold mb-6">KPCB Navi Admin</h2>
             <nav>
                 <ul class="space-y-2">
-                    <li><a href="#" id="dashboard-link" class="block py-2 px-4 rounded hover:bg-gray-700">Dashboard</a></li>
-                    <li><a href="#" id="map-link" class="block py-2 px-4 rounded hover:bg-gray-700">Map</a></li>
+                    <li><a href="#" class="block py-2 px-4 rounded hover:bg-gray-700">Dashboard</a></li>
                     <li><a href="#" class="block py-2 px-4 rounded hover:bg-gray-700">Users</a></li>
                     <li><a href="#" class="block py-2 px-4 rounded hover:bg-gray-700">Settings</a></li>
                     <li><a href="#" id="logout-btn" class="block py-2 px-4 rounded hover:bg-gray-700">Logout</a></li>
@@ -28,23 +42,14 @@
             </nav>
         </div>
         <!-- Main content -->
-        <div id="main-content" class="flex-1 flex flex-col">
+        <div class="flex-1 flex flex-col">
             <!-- Header -->
             <header class="bg-white shadow-md p-4">
                 <h1 class="text-2xl font-semibold">Dashboard</h1>
             </header>
-            <!-- Content -->
-            <div id="dashboard-content" class="flex-1 p-4">
-                <h2 class="text-xl font-semibold mb-4">Dashboard Content</h2>
-                <div id="user-list-container">
-                    <input type="text" placeholder="Search users..." class="mb-4 p-2 border border-gray-300 rounded-md w-full">
-                    <ul id="user-list">
-                        <!-- User list items will be populated here -->
-                    </ul>
-                </div>
-            </div>
-            <div id="map-content" class="hidden flex-1">
-                <div id="map" class="w-full h-full"></div>
+            <!-- Map container -->
+            <div class="flex-1">
+                <div id="map" class="w-full h-screen"></div>
             </div>
         </div>
     </div>
