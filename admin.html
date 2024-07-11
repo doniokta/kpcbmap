@@ -35,7 +35,8 @@
             <h2 class="text-2xl font-semibold mb-6">KPCB Navi Admin</h2>
             <nav>
                 <ul class="space-y-2">
-                    <li><a href="#" class="block py-2 px-4 rounded hover:bg-gray-700">Dashboard</a></li>
+                    <li><a href="#" id="dashboard-link" class="block py-2 px-4 rounded hover:bg-gray-700">Dashboard</a></li>
+                    <li><a href="#" id="map-link" class="block py-2 px-4 rounded hover:bg-gray-700">Map</a></li>
                     <li><a href="#" class="block py-2 px-4 rounded hover:bg-gray-700">Users</a></li>
                     <li><a href="#" class="block py-2 px-4 rounded hover:bg-gray-700">Settings</a></li>
                     <li><a href="#" id="logout-btn" class="block py-2 px-4 rounded hover:bg-gray-700">Logout</a></li>
@@ -43,25 +44,23 @@
             </nav>
         </div>
         <!-- Main content -->
-        <div class="flex-1 flex flex-col">
+        <div id="main-content" class="flex-1 flex flex-col">
             <!-- Header -->
             <header class="bg-white shadow-md p-4">
                 <h1 class="text-2xl font-semibold">Dashboard</h1>
             </header>
-            <!-- Main content -->
-            <div class="flex-1 flex">
-                <!-- Map container -->
-                <div id="map" class="w-1/2 h-screen"></div>
-                <!-- Dashboard content -->
-                <div id="dashboard-content" class="w-1/2 bg-white p-4 overflow-y-auto">
-                    <h2 class="text-xl font-semibold mb-4">Dashboard Content</h2>
-                    <div id="user-list-container">
-                        <input type="text" placeholder="Search users..." class="mb-4 p-2 border border-gray-300 rounded-md w-full">
-                        <ul id="user-list">
-                            <!-- User list items will be populated here -->
-                        </ul>
-                    </div>
+            <!-- Content -->
+            <div id="dashboard-content" class="flex-1 p-4">
+                <h2 class="text-xl font-semibold mb-4">Dashboard Content</h2>
+                <div id="user-list-container">
+                    <input type="text" placeholder="Search users..." class="mb-4 p-2 border border-gray-300 rounded-md w-full">
+                    <ul id="user-list">
+                        <!-- User list items will be populated here -->
+                    </ul>
                 </div>
+            </div>
+            <div id="map-content" class="hidden flex-1">
+                <div id="map" class="w-full h-full"></div>
             </div>
         </div>
     </div>
