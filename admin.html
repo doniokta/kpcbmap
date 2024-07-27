@@ -7,31 +7,14 @@
     <title>KPCB Navi Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <link rel="stylesheet" href="style.css"> <!-- Tambahkan link ke style.css -->
+    <link rel="stylesheet" href="style.css"> <!-- Link to your updated style.css -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script type="module" src="admin.js"></script>
 </head>
 
 <body class="bg-gray-100">
-    <!-- Sidebar -->
-    <div id="sidebar" class="sidebar fixed top-0 left-0 w-64 bg-gray-800 text-white h-full p-4 z-1000">
-        <h2 class="text-2xl font-semibold mb-6">KPCB Navi Admin</h2>
-        <nav>
-            <ul class="space-y-2">
-                <li><a href="#" class="block py-2 px-4 rounded hover:bg-gray-700">Dashboard</a></li>
-                <li><a href="#" class="block py-2 px-4 rounded hover:bg-gray-700">Users</a></li>
-                <li><a href="#" class="block py-2 px-4 rounded hover:bg-gray-700">Settings</a></li>
-                <li><a href="#" id="logout-btn" class="block py-2 px-4 rounded hover:bg-gray-700">Logout</a></li>
-            </ul>
-        </nav>
-        <button id="close-sidebar" class="absolute top-4 right-4 text-white text-2xl">&times;</button>
-    </div>
-    <!-- Sidebar overlay -->
-    <div id="sidebar-overlay" class="sidebar-overlay"></div>
-    
     <!-- Main content -->
     <div id="main-content" class="flex-1 flex flex-col">
-        <button id="open-sidebar" class="fixed top-4 left-4 text-2xl z-1000">☰</button>
         <header class="bg-white shadow-md p-4">
             <h1 class="text-2xl font-semibold">Dashboard</h1>
         </header>
@@ -41,22 +24,47 @@
         </div>
     </div>
 
+    <!-- Optional: Add buttons and displays for map controls -->
+    <button id="lock-button" class="lock-button">🔒</button>
+    <button id="live-tracking-button" class="live-tracking-button">📍</button>
+    <button id="mode-toggle-button" class="mode-toggle-button">🌗</button>
+    <div id="coordinates" class="coordinates">Lat: 0, Lon: 0</div>
+    <div id="speed" class="speed">Speed: 0 km/h</div>
+
     <script>
-        // JavaScript to handle sidebar toggle
-        document.getElementById('open-sidebar').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.add('sidebar-open');
-            document.getElementById('sidebar-overlay').classList.add('active');
+        // JavaScript to initialize the map
+        var map = L.map('map').setView([51.505, -0.09], 13); // Default view set to London
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Optional: Add a marker
+        L.marker([51.5, -0.09]).addTo(map)
+            .bindPopup('A sample marker.')
+            .openPopup();
+
+        // JavaScript to handle button clicks
+        document.getElementById('lock-button').addEventListener('click', function() {
+            // Handle lock button click
         });
 
-        document.getElementById('close-sidebar').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.remove('sidebar-open');
-            document.getElementById('sidebar-overlay').classList.remove('active');
+        document.getElementById('live-tracking-button').addEventListener('click', function() {
+            // Handle live tracking button click
         });
 
-        document.getElementById('sidebar-overlay').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.remove('sidebar-open');
-            document.getElementById('sidebar-overlay').classList.remove('active');
+        document.getElementById('mode-toggle-button').addEventListener('click', function() {
+            // Handle mode toggle button click
         });
+
+        // Update coordinates and speed (dummy data for now)
+        function updateDisplays() {
+            document.getElementById('coordinates').innerText = `Lat: ${map.getCenter().lat.toFixed(4)}, Lon: ${map.getCenter().lng.toFixed(4)}`;
+            document.getElementById('speed').innerText = `Speed: ${Math.random().toFixed(2)} km/h`; // Placeholder speed
+        }
+
+        setInterval(updateDisplays, 1000); // Update every second
     </script>
 </body>
 
