@@ -27,43 +27,45 @@ document.getElementById('login-form').addEventListener('submit', function(event)
 
   if (passwordInput === ADMIN_PASSWORD) {
     document.getElementById('login-container').style.display = 'none';
-    document.getElementById('admin-content').style.display = 'block';
+    document.getElementById('admin-content').classList.remove('hidden');
     initializeAdminContent();
   } else {
     alert('Incorrect password. Please try again.');
   }
 });
 
+document.getElementById('logout-button').addEventListener('click', function() {
+  document.getElementById('admin-content').classList.add('hidden');
+  document.getElementById('login-container').style.display = 'flex';
+  document.getElementById('password').value = '';  // Clear the password input
+});
+
+let map;
+const userMarkers = {};
+let geoJsonLayer; // Variable to hold the geoJsonLayer
+
 function initializeAdminContent() {
-  // Leaflet map setup for admin
-  let map = L.map('map').setView([0, 0], 2);
+  if (!map) {
+    // Initialize map only if it hasn't been initialized yet
+    map = L.map('map').setView([0, 0], 2);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
 
-  const userMarkers = {};
-
-  // Custom icon for users
-  const userIcon = L.divIcon({
-    className: 'custom-icon',
-    html: '<div class="red-circle"></div>',
-    iconSize: [12, 12],
-    iconAnchor: [6, 6]
-  });
-
-  // CSS for custom icon
-  const style = document.createElement('style');
-  style.textContent = `
-    .custom-icon .red-circle {
-      width: 12px;
-      height: 12px;
-      background-color: red;
-      border-radius: 50%;
-    }
-  `;
-  document.head.append(style);
+    // CSS for custom icon
+    const style = document.createElement('style');
+    style.textContent = `
+      .custom-icon .red-circle {
+        width: 12px;
+        height: 12px;
+        background-color: red;
+        border-radius: 50%;
+      }
+    `;
+    document.head.append(style);
+  }
 
   // Fetch all user locations from Firebase and display them
   const locationsRef = ref(database, 'locations/');
@@ -72,47 +74,78 @@ function initializeAdminContent() {
       const childData = childSnapshot.val();
       const lat = childData.latitude;
       const lng = childData.longitude;
-      const speed = childData.speed;
-      const userId = childSnapshot.key;
+      const accuracy = childData.accuracy;
+      const userName = childSnapshot.key;
+
+      // Debugging: Log data to console
+      console.log(`User: ${userName}, Lat: ${lat}, Lng: ${lng}, Accuracy: ${accuracy}`);
 
       // Content for the popup
       const popupContent = `
         <div>
-          <p><strong>User ID:</strong> ${userId}</p>
+          <p><strong>User Name:</strong> ${userName}</p>
           <p><strong>Latitude:</strong> ${lat}</p>
           <p><strong>Longitude:</strong> ${lng}</p>
-          <p><strong>Speed:</strong> ${speed} m/s</p>
+          <p><strong>Accuracy:</strong> ${accuracy} meters</p>
         </div>
       `;
 
       // Update or add user marker to map
-      if (userMarkers[userId]) {
-        userMarkers[userId].setLatLng([lat, lng]).setPopupContent(popupContent);
+      if (userMarkers[userName]) {
+        userMarkers[userName].setLatLng([lat, lng]).setPopupContent(popupContent);
       } else {
-        userMarkers[userId] = L.marker([lat, lng], { icon: userIcon }).addTo(map).bindPopup(popupContent);
+        const userIcon = L.divIcon({
+          className: 'custom-icon',
+          html: '<div class="red-circle"></div>',
+          iconSize: [12, 12],
+          iconAnchor: [6, 6]
+        });
+
+        userMarkers[userName] = L.marker([lat, lng], { icon: userIcon }).addTo(map).bindPopup(popupContent);
       }
     });
   }, (error) => {
     console.error('Error fetching locations:', error);
   });
-
-  // Function to load GeoJSON data onto the map
-  function fetchAndAddGeoJSONLayer(url) {
-    fetch(url)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
-        L.geoJSON(data).addTo(map);
-      })
-      .catch(error => {
-        console.error('Error loading GeoJSON file:', error);
-      });
-  }
-
-  // Load GeoJSON data from map.geojson onto the map
-  fetchAndAddGeoJSONLayer('map.geojson');
 }
+
+// Function to load GeoJSON data onto the map and adjust map view
+function fetchAndAddGeoJSONLayer(url) {
+  fetch(url)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (geoJsonLayer) {
+        map.removeLayer(geoJsonLayer);
+      }
+      geoJsonLayer = L.geoJSON(data).addTo(map);
+      map.fitBounds(geoJsonLayer.getBounds());
+    })
+    .catch(error => {
+      console.error('Error loading GeoJSON file:', error);
+    });
+}
+
+// Handle sidebar navigation
+document.querySelectorAll('#sidebar ul li a').forEach(link => {
+  link.addEventListener('click', function(event) {
+    event.preventDefault();
+    document.querySelectorAll('#content > div').forEach(div => {
+      div.classList.add('hidden');
+    });
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      target.classList.remove('hidden');
+      if (target.id === 'map-view') {
+        setTimeout(() => {
+          map.invalidateSize();
+          fetchAndAddGeoJSONLayer('map.geojson'); // Load GeoJSON when map-view is clicked
+        }, 100);
+      }
+    }
+  });
+});
